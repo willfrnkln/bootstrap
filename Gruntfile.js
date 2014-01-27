@@ -339,7 +339,7 @@ module.exports = function (grunt) {
       all: {
         options: {
           build: process.env.TRAVIS_JOB_ID,
-          concurrency: 10,
+          concurrency: 9,
           urls: ['http://127.0.0.1:3000/js/tests/index.html'],
           browsers: grunt.file.readYAML('test-infra/sauce_browsers.yml')
         }
@@ -352,6 +352,23 @@ module.exports = function (grunt) {
       },
       npmShrinkWrap: {
         command: 'npm shrinkwrap --dev'
+      },
+      uploadScreenshots: {
+        command: './test-infra/store_screenshots.py $TRAVIS_COMMIT'
+      }
+    },
+
+    sauce_screenshots: {
+      examples: {
+        urls: function () {
+          var url2dir = {};
+          fs.readdirSync('docs/examples').forEach(function (page) {
+            url2dir['http://127.0.0.1:3000/_gh_pages/examples/' + page + '/'] = './screenshots/examples/' + page;
+          });
+          return url2dir;
+        },
+        browsers: grunt.file.readYAML('./test-infra/sauce_browsers.yml'),
+        timeout: (15 * 60 * 1000)
       }
     }
   });
@@ -375,11 +392,15 @@ module.exports = function (grunt) {
     testSubtasks.push('validate-html');
   }
   // Only run Sauce Labs tests if there's a Sauce access key
-  if (typeof process.env.SAUCE_ACCESS_KEY !== 'undefined' &&
-      // Skip Sauce if running a different subset of the test suite
-      (!process.env.TWBS_TEST || process.env.TWBS_TEST === 'sauce-js-unit')) {
-    testSubtasks.push('connect');
-    testSubtasks.push('saucelabs-qunit');
+  if (typeof process.env.SAUCE_ACCESS_KEY !== 'undefined') {
+    // Skip Sauce if running a different subset of the test suite
+    if (!process.env.TWBS_TEST || process.env.TWBS_TEST === 'sauce-js-unit') {
+      testSubtasks.push('connect');
+      testSubtasks.push('saucelabs-qunit');
+    }
+    else if (process.env.TWBS_TEST === 'hocus-focus') {
+      testSubtasks.push('hocus-focus');
+    }
   }
   // Only run BrowserStack tests if there's a BrowserStack access key
   if (typeof process.env.BROWSERSTACK_KEY !== 'undefined' &&
@@ -422,4 +443,7 @@ module.exports = function (grunt) {
   // Task for updating the npm packages used by the Travis build.
   grunt.registerTask('update-shrinkwrap', ['exec:npmUpdate', 'exec:npmShrinkWrap', '_update-shrinkwrap']);
   grunt.registerTask('_update-shrinkwrap', function () { updateShrinkwrap.call(this, grunt); });
+
+  // Task for visual CSS regression testing
+  grunt.registerTask('hocus-focus', ['jekyll', 'connect', 'sauce_screenshots', 'exec:uploadScreenshots']);
 };
