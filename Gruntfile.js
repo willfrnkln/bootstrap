@@ -362,12 +362,17 @@ module.exports = function (grunt) {
       examples: {
         urls: function () {
           var url2dir = {};
+          var stop = false;
           fs.readdirSync('docs/examples').forEach(function (page) {
+            if (stop) {
+              return;
+            }
+            stop = true;
             url2dir['http://127.0.0.1:3000/_gh_pages/examples/' + page + '/'] = './screenshots/examples/' + page;
           });
           return url2dir;
         },
-        browsers: grunt.file.readYAML('./test-infra/sauce_browsers.yml'),
+        browsers: [grunt.file.readYAML('./test-infra/sauce_browsers.yml')[0]],
         timeout: (15 * 60 * 1000)
       }
     }
