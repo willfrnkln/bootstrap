@@ -361,7 +361,7 @@ module.exports = function (grunt) {
     sauce_screenshots: {
       examples: {
         urls: function () {
-          var url2dir = {};
+          var url2dir = {'http://127.0.0.1:3000/js/tests/index.html': './screenshots/foobar'}; return url2dir;
           var stop = false;
           fs.readdirSync('docs/examples').forEach(function (page) {
             if (stop) {
