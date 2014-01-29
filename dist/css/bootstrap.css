@@ -1796,7 +1796,7 @@ fieldset[disabled] .checkbox-inline {
   border-radius: 3px;
 }
 select.input-sm {
-  height: 30px;
+  height: auto;
   line-height: 30px;
 }
 textarea.input-sm {
@@ -1810,7 +1810,7 @@ textarea.input-sm {
   border-radius: 6px;
 }
 select.input-lg {
-  height: 46px;
+  height: auto;
   line-height: 46px;
 }
 textarea.input-lg {
